@@ -5,8 +5,15 @@ from fastapi import Request, Response
 from fastapi import Header
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import StreamingResponse
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 import os
 import re
+import cv2
+import threading
+import io
+from PIL import Image
 
 app = FastAPI()
 
@@ -23,6 +30,37 @@ app.add_middleware(
 CHUNK_SIZE = 1024*1024
 video_path = Path("song.mp4")
 templates = Jinja2Templates(directory="templates")
+
+i = 0
+while True:
+    try:
+         c = cv2.VideoCapture(i)
+         camera = c
+         print ("Cam " + str(i) + " is valid.")
+         break
+    except:
+        print ("Cam " + str(i) + " is invalid.")
+
+def gen_frames():  # generate frame by frame from camera
+    while True:
+        # Capture frame-by-frame
+        success, frame = camera.read()  # read the camera frame
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                                   bytearray(frame) + b'\r\n')
+
+@app.get('/webcam')
+def index(request: Request):
+    """Video streaming home page."""
+    return templates.TemplateResponse("index2.htm", context={"request": request})
+
+@app.get('/feed')
+def video_feed():
+        return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace;boundary=frame")
 
 @app.get("/movie")
 async def read_root(request: Request):
