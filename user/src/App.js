@@ -5,9 +5,12 @@ import { fetchToCurl } from 'fetch-to-curl';
 import parse from "html-react-parser";
 import './App.css';
 
+
 const App=() => {
+  //const [timer, setTimer] = useState(0);
+
   const ask_api =async () => {
-    let timer = setInterval(ask_api, 1)
+    //setTimer(setInterval(ask_api, 1))
     const url = 'http://localhost:8000/';
     const options = {
       headers: {
@@ -20,16 +23,18 @@ const App=() => {
       return Response.json()
     }).then((data) => {
       console.log(data);
-      alert(JSON.stringify(data))
-      console.log("time stop", timer)
+      alert(JSON.stringify(data)) //+ "| " +  timer + "ms")
+      //console.log("time stop", timer)
     })
-    console.log("delay", timer)
-    clearInterval(timer)
+    console.log("delay")
+   // setTimer(0)
   };
   
   const [display, setDisplay] = useState("");
+  const [displayw, setDisplayw] = useState("");
 
   const ask_api_stream =async () => {
+    setDisplay("")
     const url = 'http://localhost:8000/movie';
     const options = {
       headers: {
@@ -49,6 +54,27 @@ const App=() => {
 
   };
 
+  const ask_api_webcam =async () => {
+    setDisplayw("")
+    const url = 'http://localhost:8000/webcam';
+    const options = {
+      headers: {
+        accept: 'application/json'
+      },
+      method: 'get'
+    };
+    console.log(fetchToCurl(url, options));
+    fetch(url, options).then((Response) => {
+      console.log(Response)
+      return Response.json()
+    }).then((data) => {
+      console.log(data)
+      setDisplayw(data)
+
+    })
+
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -58,6 +84,8 @@ const App=() => {
         <br></br>
         <Button variant="contained" onClick={() => ask_api_stream()}>Stream</Button>
         <br></br><div>{parse(display)}</div>
+        <Button variant="contained" onClick={() => ask_api_webcam()}>Webcam</Button>
+        <br></br><div>{parse(displayw)}</div>
       </header>
     </div>
   );

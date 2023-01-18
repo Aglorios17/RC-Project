@@ -26,3 +26,8 @@ async def rien():
 async def main():
     r = requests.get('http://192.168.1.140:8000/movie')
     return (r.text)
+
+@app.get("/webcam")
+async def main():
+    r = requests.get('http://192.168.1.140:8000/webcam')
+    return (r.text)
